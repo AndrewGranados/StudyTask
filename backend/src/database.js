@@ -62,37 +62,9 @@ async function initializeDatabase() {
 
   const row = await get('SELECT COUNT(*) as count FROM tasks');
   if (row.count === 0) {
-    console.log('[INFO] Database is empty, seeding initial tasks...');
-    const insert = db.prepare(`
-      INSERT INTO tasks (title, description, subject, due_date, priority, status, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const now = new Date().toISOString();
-    const tasks = [
-      { title: 'Investigar PWA', description: 'Investigar Service Workers, Cache API y Web App Manifest para el proyecto final.', subject: 'Desarrollo Web', dueDate: '2026-10-10', priority: 'high', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Diseñar esquema ER', description: 'Crear diagrama entidad-relación para el sistema de gestión académica.', subject: 'Bases de Datos', dueDate: '2026-10-12', priority: 'high', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Patrones de diseño', description: 'Estudiar Factory, Singleton, Observer y Strategy para el examen parcial.', subject: 'Ingeniería de Software', dueDate: '2026-10-08', priority: 'medium', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Algoritmos de ordenamiento', description: 'Implementar QuickSort, MergeSort y HeapSort en Python.', subject: 'Programación', dueDate: '2026-10-15', priority: 'medium', status: 'completed', createdAt: now, updatedAt: now },
-      { title: 'Planificación de procesos', description: 'Resolver ejercicios de FCFS, SJF, Round Robin y Prioridad.', subject: 'Sistemas Operativos', dueDate: '2026-10-20', priority: 'low', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Configurar VLANs', description: 'Practicar configuración de VLANs, trunking y routing inter-VLAN en Packet Tracer.', subject: 'Redes', dueDate: '2026-10-18', priority: 'medium', status: 'completed', createdAt: now, updatedAt: now },
-      { title: 'App React Native básica', description: 'Crear aplicación de lista de tareas con navegación y estado global.', subject: 'Desarrollo Móvil', dueDate: '2026-10-25', priority: 'high', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Normalización 3FN', description: 'Ejercicios de normalización hasta tercera forma normal.', subject: 'Bases de Datos', dueDate: '2026-10-07', priority: 'low', status: 'completed', createdAt: now, updatedAt: now },
-      { title: 'Testing unitario con Vitest', description: 'Escribir pruebas para componentes Vue y composables.', subject: 'Desarrollo Web', dueDate: '2026-10-22', priority: 'medium', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Arquitectura limpia', description: 'Leer capítulos 1-5 y hacer resumen de Clean Architecture.', subject: 'Ingeniería de Software', dueDate: '2026-10-30', priority: 'low', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Memoria virtual y paginación', description: 'Entender TLB, page fault, algoritmos de reemplazo de página.', subject: 'Sistemas Operativos', dueDate: '2026-10-14', priority: 'high', status: 'pending', createdAt: now, updatedAt: now },
-      { title: 'Protocolo HTTP/2 y HTTP/3', description: 'Comparar características, multiplexación, server push, QUIC.', subject: 'Redes', dueDate: '2026-10-16', priority: 'medium', status: 'completed', createdAt: now, updatedAt: now },
-    ];
-
-    for (const task of tasks) {
-      await run(
-        'INSERT INTO tasks (title, description, subject, due_date, priority, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [task.title, task.description, task.subject, task.dueDate, task.priority, task.status, task.createdAt, task.updatedAt]
-      );
-    }
-    console.log(`[INFO] Seeded ${tasks.length} initial tasks`);
+    console.log('[INFO] Database is empty, ready for user data (auto-seed disabled)');
   } else {
-    console.log('[INFO] Database already has', row.count, 'tasks, skipping seed');
+    console.log('[INFO] Database already has', row.count, 'tasks');
   }
 }
 

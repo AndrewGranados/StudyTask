@@ -3,14 +3,17 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTasks } from '@/composables/useTasks'
 import { useSubjects } from '@/composables/useTasks'
+import { useToast } from '@/composables/useToast'
 import TaskCard from '@/components/TaskCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import Toast from '@/components/Toast.vue'
 import { Search, Filter, X, ChevronDown } from 'lucide-vue-next'
 import type { TaskFilters } from '@/types/task'
 
 const route = useRoute()
 const { tasks, loading, error, loadTasks, deleteTask, toggleStatus, setFilters, clearFilters, filters } = useTasks()
 const { subjects, loadSubjects } = useSubjects()
+const { success: showSuccess, error: showError } = useToast()
 
 const searchQuery = ref('')
 const showFilters = ref(false)
@@ -73,11 +76,35 @@ const emptyTitle = computed(() => {
   return 'No hay tareas'
 })
 
-const emptyDescription = computed(() => {
-  if (route.name === 'CompletedTasks') return 'Cuando completes tareas aparecerán aquí.'
-  if (route.name === 'PendingTasks') return '¡Todo al día! No tienes tareas pendientes.'
-  return 'Crea tu primera tarea para empezar.'
-})
+const emptyDescription = computed(() =>
+  route.name === 'CompletedTasks'
+    ? 'Cuando completes tareas aparecerán aquí.'
+    : route.name === 'PendingTasks'
+      ? '¡Todo al día! No tienes tareas pendientes.'
+      : 'Crea tu primera tarea para empezar.'
+)
+
+const handleDelete = async (id: string) => {
+  try {
+    await deleteTask(id)
+    showSuccess('Tarea eliminada correctamente')
+  } catch (e) {
+    showError('Error al eliminar la tarea')
+    console.error(e)
+  }
+}
+
+const handleToggle = async (id: string) => {
+  try {
+    await toggleStatus(id)
+    const task = tasks.value.find(t => t.id === id)
+    const newStatus = task?.status === 'pending' ? 'completada' : 'pendiente'
+    showSuccess(`Tarea marcada como ${newStatus}`)
+  } catch (e) {
+    showError('Error al cambiar el estado de la tarea')
+    console.error(e)
+  }
+}
 </script>
 
 <template>
@@ -197,10 +224,12 @@ const emptyDescription = computed(() => {
         v-for="task in tasks"
         :key="task.id"
         :task="task"
-        @delete="deleteTask"
-        @toggle="toggleStatus"
+        @delete="handleDelete"
+        @toggle="handleToggle"
       />
     </div>
+
+    <Toast />
   </div>
 </template>
 
@@ -346,4 +375,3 @@ const emptyDescription = computed(() => {
   }
 }
 </style>
-

@@ -4,7 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTasks } from '@/composables/useTasks'
 import { useTask } from '@/composables/useTasks'
 import { useSubjects } from '@/composables/useTasks'
+import { useToast } from '@/composables/useToast'
 import TaskForm from '@/components/TaskForm.vue'
+import Toast from '@/components/Toast.vue'
 import { ArrowLeft } from 'lucide-vue-next'
 import type { TaskFormData } from '@/types/task'
 
@@ -16,6 +18,7 @@ const isEditing = computed(() => route.name === 'TaskEdit')
 const { createTask, updateTask } = useTasks()
 const { task: existingTask, loadTask: loadExistingTaskData } = useTask(taskId)
 const { loadSubjects } = useSubjects()
+const { success: showSuccess, error: showError } = useToast()
 
 const formData = ref<TaskFormData>({
   title: '',
@@ -31,14 +34,12 @@ const submitError = ref<string | null>(null)
 
 const today = new Date().toISOString().split('T')[0]
 
-const isValid = computed(() => {
-  return (
-    formData.value.title.trim() &&
-    formData.value.subject.trim() &&
-    formData.value.dueDate &&
-    !Object.values(errors.value).some(e => e)
-  )
-})
+const isValid = computed(() =>
+  formData.value.title.trim() &&
+  formData.value.subject.trim() &&
+  formData.value.dueDate &&
+  !Object.values(errors.value).some(e => e)
+)
 
 function validateField(field: keyof TaskFormData) {
   switch (field) {
@@ -97,12 +98,16 @@ async function handleSubmit(data: TaskFormData) {
   try {
     if (isEditing.value && taskId()) {
       await updateTask(taskId()!, data)
+      showSuccess('Tarea actualizada correctamente')
     } else {
       await createTask(data)
+      showSuccess('Tarea creada correctamente')
     }
     router.push({ name: 'TaskList' })
   } catch (e) {
-    submitError.value = isEditing.value ? 'Error al actualizar la tarea' : 'Error al crear la tarea'
+    const errorMessage = isEditing.value ? 'Error al actualizar la tarea' : 'Error al crear la tarea'
+    submitError.value = errorMessage
+    showError(errorMessage)
     console.error(e)
   } finally {
     submitting.value = false
@@ -138,9 +143,13 @@ onMounted(() => {
     <TaskForm
       :initial-data="formData"
       :is-editing="isEditing"
+      :submitting="submitting"
+      :submit-error="submitError"
       @submit="handleSubmit"
       @cancel="handleCancel"
     />
+
+    <Toast />
   </div>
 </template>
 

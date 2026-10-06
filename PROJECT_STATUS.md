@@ -5,6 +5,7 @@
 **Fase 1 — Frontend: COMPLETADA ✅**
 **Fase 2 — Backend + API REST + SQLite: COMPLETADA ✅**
 **Fase 3 — Integración Frontend + API REST + SQLite: COMPLETADA ✅**
+**Corrección Fase 3 (Bug Fixes & UX): COMPLETADA ✅**
 
 - Vue 3 + TypeScript + Vue Router funcionando (Fase 1)
 - Node.js + SQLite + API REST funcionando (Fase 2)
@@ -13,6 +14,9 @@
 - CRUD completo funcionando end-to-end
 - Diseño responsive implementado
 - Build de producción exitoso en ambos
+- **Bug CREATE corregido** (loading state "Guardando..." se quedaba bloqueado)
+- **Feedback visual añadido** (toasts de éxito/error para CRUD)
+- **Datos seed eliminados** y auto-seed desactivado
 
 ## Fases del proyecto
 
@@ -106,7 +110,41 @@
 - ✅ TYPECHECK: `npm run typecheck` → 0 errores
 - ✅ BUILD: `npm run build` → éxito en 3.7s
 
-**Qué falta:** Nada - Fase 3 completada
+**Corrección Fase 3 (Bug Fixes & UX) - COMPLETADA ✅:**
+- **Bug CREATE corregido**: El estado "Guardando..." se quedaba bloqueado permanentemente. Causa: `TaskForm.vue` tenía su propio estado `submitting` que nunca se reseteaba porque el padre manejaba la llamada async. Solución: Eliminado estado local en `TaskForm.vue`, ahora recibe `submitting` y `submitError` como props del padre (`TaskFormView.vue`).
+- **Feedback visual añadido**: Sistema de toasts/notificaciones (`Toast.vue` + `useToast.ts`) con mensajes de éxito/error para CREATE, UPDATE, DELETE, STATUS TOGGLE. Auto-desaparición a 4s, diseño integrado con la paleta de colores.
+- **Datos seed eliminados**: Eliminados 7 registros seed/mock de la BD SQLite (`DELETE FROM tasks`). La BD queda vacía para que el usuario cree sus propias tareas.
+- **Auto-seed desactivado**: Modificado `backend/src/database.js` para NO insertar datos seed automáticamente al iniciar. Ahora solo crea la tabla si no existe y loggea si está vacía.
+- **Feedback en TaskDetailView**: Toasts para toggle status y delete.
+- **Feedback en TaskListView**: Toasts para delete y toggle status.
+- **Feedback en TaskFormView**: Toasts para create/update success/error.
+
+**Archivos creados/modificados en corrección:**
+- `frontend/src/components/Toast.vue` — Componente toast/notificación
+- `frontend/src/composables/useToast.ts` — Composable para gestión de toasts
+- `frontend/src/components/TaskForm.vue` — Eliminado estado `submitting`/`submitError` local, usa props
+- `frontend/src/views/TaskFormView.vue` — Añadido `useToast`, muestra toasts de éxito/error
+- `frontend/src/views/TaskDetailView.vue` — Añadido `useToast`, toasts para status toggle y delete
+- `frontend/src/views/TaskListView.vue` — Añadido `useToast`, toasts para delete y toggle
+- `backend/src/database.js` — Auto-seed desactivado
+
+**Pruebas realizadas en corrección:**
+- ✅ CREATE: POST /api/tasks → 201, toast "Tarea creada correctamente", navegación a lista
+- ✅ READ: GET /api/tasks → 200, lista desde SQLite
+- ✅ READ ONE: GET /api/tasks/:id → 200, tarea individual
+- ✅ UPDATE: PUT /api/tasks/:id → 200, toast "Tarea actualizada correctamente", navegación a lista
+- ✅ STATUS TOGGLE: PATCH /api/tasks/:id/status → 200, toast "Tarea marcada como completada/pendiente"
+- ✅ DELETE: DELETE /api/tasks/:id → 204, toast "Tarea eliminada correctamente"
+- ✅ FILTROS: `?status=pending`, `?priority=high`, `?subject=...` funcionando
+- ✅ VALIDACIÓN: 400 para datos inválidos (title corto, priority inválido, campos faltantes) con toast de error
+- ✅ 404: ID inexistente, rutas no encontradas
+- ✅ CORS: Headers correctos para `Origin: http://localhost:3000`
+- ✅ PERSISTENCIA: Tarea creada → reinicio Node.js → tarea presente en GET /api/tasks
+- ✅ BASE LIMPIA: BD vacía al inicio, sin datos seed
+- ✅ TYPECHECK: `npm run typecheck` → 0 errores
+- ✅ BUILD: `npm run build` → éxito en 5.1s
+
+**Qué falta:** Nada - Fase 3 + Corrección completada
 
 ### Fase 4 — PWA
 **Estado:** Pendiente
@@ -120,11 +158,11 @@
 C:\Pwa\AplicativoNotas\
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # 9 componentes reutilizables
+│   │   ├── components/       # 10 componentes reutilizables (+ Toast)
 │   │   ├── views/            # 4 vistas de página
 │   │   ├── router/           # Configuración de Vue Router (7 rutas)
 │   │   ├── services/         # api.ts + taskService.ts (API real)
-│   │   ├── composables/      # 4 composables reactivos
+│   │   ├── composables/      # 5 composables reactivos (+ useToast)
 │   │   ├── stores/           # 1 store Pinia (UI state)
 │   │   ├── types/            # Interfaces TypeScript
 │   │   └── assets/styles/    # Design system CSS (main.css)
@@ -135,13 +173,13 @@ C:\Pwa\AplicativoNotas\
 ├── backend/
 │   ├── src/
 │   │   ├── server.js         # Servidor HTTP nativo + CORS
-│   │   ├── database.js       # SQLite + repository + seed
+│   │   ├── database.js       # SQLite + repository (sin auto-seed)
 │   │   ├── routes/
 │   │   │   └── tasks.js      # Rutas + parsing + CORS
 │   │   └── controllers/
 │   │       └── tasksController.js  # Lógica de negocio + validación
 │   ├── data/
-│   │   └── studytask.sqlite  # Base de datos SQLite
+│   │   └── studytask.sqlite  # Base de datos SQLite (limpia, sin seed)
 │   ├── package.json
 │   └── README.md
 ├── PROJECT_STATUS.md
@@ -172,28 +210,35 @@ C:\Pwa\AplicativoNotas\
 
 1. **Node.js HTTP nativo**: Sin Express, solo `node:http`. Simplicidad académica.
 2. **SQLite con sqlite3**: Prebuilt binaries para Windows, sin Python/build tools extra.
-3. **Auto-inicialización DB**: Carpeta `data/`, archivo `.sqlite`, tabla `tasks` + seed si vacío.
+3. **Auto-inicialización DB**: Carpeta `data/`, archivo `.sqlite`, tabla `tasks` (sin auto-seed).
 4. **Validación dual**: Frontend (UX) + Backend (seguridad). Constraints CHECK en SQL.
 5. **CORS restringido**: Solo `http://localhost:3000`, no wildcard.
 6. **JSON consistente**: `{ success: true, data }` / `{ success: false, error: { message } }`.
 7. **Sin ORM**: SQL directo para transparencia académica (fácil de explicar al profesor).
 8. **Integración transparente**: Composables sin cambios, solo taskService.ts actualizado.
+9. **Feedback UX**: Sistema de toasts centralizado para feedback de operaciones CRUD.
 
 ## Archivos principales (Backend)
 
 - `backend/src/server.js` — Entry point, servidor HTTP, CORS, router
-- `backend/src/database.js` — Conexión SQLite, repository, seed, inicialización
+- `backend/src/database.js` — Conexión SQLite, repository (sin auto-seed)
 - `backend/src/routes/tasks.js` — Rutas, parsing query/body, CORS preflight
 - `backend/src/controllers/tasksController.js` — Validación, sanitización, lógica CRUD
-- `backend/data/studytask.sqlite` — Base de datos persistente
+- `backend/data/studytask.sqlite` — Base de datos persistente (limpia)
 - `backend/package.json` — Scripts: `npm start`, `npm run dev`
 
-## Archivos principales (Frontend - Integración)
+## Archivos principales (Frontend - Integración + Corrección)
 
 - `frontend/src/services/api.ts` — Servicio centralizado con `fetch()` nativo
 - `frontend/src/services/taskService.ts` — Adaptador a API real (misma interfaz)
 - `frontend/src/vite-env.d.ts` — Tipos para `import.meta.env.VITE_API_BASE_URL`
 - `frontend/src/composables/useTasks.ts` — Sin cambios, usa taskService
+- `frontend/src/composables/useToast.ts` — Composable para toasts
+- `frontend/src/components/Toast.vue` — Componente toast/notificación
+- `frontend/src/components/TaskForm.vue` — Sin estado local submitting/error
+- `frontend/src/views/TaskFormView.vue` — Controla submitting/error + toasts
+- `frontend/src/views/TaskDetailView.vue` — Toasts para status/delete
+- `frontend/src/views/TaskListView.vue` — Toasts para delete/toggle
 
 ## Problemas conocidos resueltos
 
@@ -204,6 +249,9 @@ C:\Pwa\AplicativoNotas\
 5. ✅ **Validación backend** — 400 con detalles para datos inválidos
 6. ✅ **Frontend sin regresiones** — `npm run typecheck` y `npm run build` OK
 7. ✅ **Integración API** — Mock/localStorage eliminado, API real funcionando
+8. ✅ **Bug CREATE loading state** — Estado "Guardando..." bloqueado, corregido moviendo estado al padre
+8. ✅ **Feedback UX** — Sistema de toasts para éxito/error en todas las operaciones CRUD
+9. ✅ **Datos seed** — Eliminados, auto-seed desactivado, BD limpia
 
 ## Próximos pasos (Fase 4+)
 
@@ -217,5 +265,6 @@ C:\Pwa\AplicativoNotas\
 **Commits:**
 - `4297beb` — feat(frontend): implement complete StudyTask frontend
 - `7c35162` — feat(backend): implement REST API with SQLite
-- `abc1234` — feat(integration): connect frontend with REST API and SQLite
+- `c7c8da5` — feat(integration): connect frontend with REST API and SQLite
+- `fix(integration): stabilize CRUD flow, add toast feedback, clean seed data`
 **Builds:** ✅ Frontend + Backend funcionando

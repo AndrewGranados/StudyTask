@@ -3,9 +3,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTask } from '@/composables/useTasks'
 import { useTasks } from '@/composables/useTasks'
+import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TaskStatusBadge from '@/components/TaskStatusBadge.vue'
 import TaskPriorityBadge from '@/components/TaskPriorityBadge.vue'
+import Toast from '@/components/Toast.vue'
 import { RouterLink } from 'vue-router'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -17,6 +19,7 @@ const taskId = () => route.params.id as string
 
 const { task, loading, error, loadTask } = useTask(taskId)
 const { updateTask, deleteTask } = useTasks()
+const { success: showSuccess, error: showError } = useToast()
 
 const showDeleteDialog = ref(false)
 
@@ -42,16 +45,28 @@ const getPriorityIcon = (priority: string) => {
 const handleToggleStatus = async () => {
   if (!task.value) return
   const newStatus = task.value.status === 'pending' ? 'completed' : 'pending'
-  await updateTask(task.value.id, { status: newStatus })
-  loadTask()
+  try {
+    await updateTask(task.value.id, { status: newStatus })
+    showSuccess(newStatus === 'completed' ? 'Tarea marcada como completada' : 'Tarea marcada como pendiente')
+    loadTask()
+  } catch (e) {
+    showError('Error al cambiar el estado de la tarea')
+    console.error(e)
+  }
 }
 
 const handleDelete = async () => {
   if (!task.value) return
-  const success = await deleteTask(task.value.id)
-  if (success) {
-    showDeleteDialog.value = false
-    router.push({ name: 'TaskList' })
+  try {
+    const success = await deleteTask(task.value.id)
+    if (success) {
+      showSuccess('Tarea eliminada correctamente')
+      showDeleteDialog.value = false
+      router.push({ name: 'TaskList' })
+    }
+  } catch (e) {
+    showError('Error al eliminar la tarea')
+    console.error(e)
   }
 }
 
@@ -167,6 +182,8 @@ onMounted(() => {
       @confirm="handleDelete"
       @cancel="showDeleteDialog = false"
     />
+
+    <Toast />
   </div>
 </template>
 
@@ -264,12 +281,12 @@ onMounted(() => {
 
 .detail-section {
   padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border).
 }
 
 .detail-section:last-child {
   padding-bottom: 0;
-  border-bottom: none;
+  border-bottom: none.
 }
 
 .detail-section-title {
@@ -279,7 +296,7 @@ onMounted(() => {
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-4).
 }
 
 .detail-description {

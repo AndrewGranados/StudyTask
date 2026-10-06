@@ -6,10 +6,14 @@ import type { TaskFormData, TaskPriority } from '@/types/task'
 interface Props {
   initialData?: Partial<TaskFormData>
   isEditing?: boolean
+  submitting?: boolean
+  submitError?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isEditing: false,
+  submitting: false,
+  submitError: null,
 })
 
 const emit = defineEmits<{
@@ -28,25 +32,21 @@ const formData = ref<TaskFormData>({
 })
 
 const errors = ref<Partial<Record<keyof TaskFormData, string>>>({})
-const submitting = ref(false)
-const submitError = ref<string | null>(null)
 
 const today = new Date().toISOString().split('T')[0]
 
-const priorityOptions = [
-  { value: 'low' as TaskPriority, label: 'Baja' },
-  { value: 'medium' as TaskPriority, label: 'Media' },
-  { value: 'high' as TaskPriority, label: 'Alta' },
-] as const
+const priorityOptions: { value: TaskPriority; label: string }[] = [
+  { value: 'low', label: 'Baja' },
+  { value: 'medium', label: 'Media' },
+  { value: 'high', label: 'Alta' },
+]
 
-const isValid = computed(() => {
-  return (
-    formData.value.title.trim() &&
-    formData.value.subject.trim() &&
-    formData.value.dueDate &&
-    !Object.values(errors.value).some(e => e)
-  )
-})
+const isValid = computed(() =>
+  formData.value.title.trim() &&
+  formData.value.subject.trim() &&
+  formData.value.dueDate &&
+  !Object.values(errors.value).some(e => e)
+)
 
 const priorityModel = ref<TaskPriority>(formData.value.priority)
 
@@ -97,9 +97,6 @@ function validateForm() {
 
 async function handleSubmit() {
   if (!validateForm()) return
-
-  submitting.value = true
-  submitError.value = null
 
   emit('submit', { ...formData.value })
 }
@@ -224,7 +221,7 @@ initForm()
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn btn-secondary" @click="handleCancel">
+      <button type="button" class="btn btn-secondary" @click="handleCancel" :disabled="submitting">
         Cancelar
       </button>
       <button type="submit" class="btn btn-primary" :disabled="!isValid || submitting">
