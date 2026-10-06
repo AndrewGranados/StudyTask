@@ -4,11 +4,13 @@
 
 **Fase 1 — Frontend: COMPLETADA ✅**
 **Fase 2 — Backend + API REST + SQLite: COMPLETADA ✅**
+**Fase 3 — Integración Frontend + API REST + SQLite: COMPLETADA ✅**
 
 - Vue 3 + TypeScript + Vue Router funcionando (Fase 1)
 - Node.js + SQLite + API REST funcionando (Fase 2)
-- Todas las vistas implementadas y navegables
-- CRUD completo en frontend y backend
+- Frontend integrado con API REST real (Fase 3)
+- SQLite como fuente de verdad única
+- CRUD completo funcionando end-to-end
 - Diseño responsive implementado
 - Build de producción exitoso en ambos
 
@@ -65,16 +67,51 @@
 
 **Qué falta:** Nada - Fase 2 completada
 
-### Fase 3 — Base de datos
-**Estado:** Completada (integrada en Fase 2) ✅
+### Fase 3 — Integración Frontend + API REST + SQLite
+**Estado:** Completada ✅
+**Porcentaje:** 100%
+**Qué se implementó:**
+- Servicio central de API: `frontend/src/services/api.ts` con `fetch()` nativo
+- Reemplazo de `taskService.ts` mock/localStorage por llamadas reales a la API REST
+- Variables de entorno: `VITE_API_BASE_URL` configurable (default `http://localhost:3001/api`)
+- Tipado TypeScript para `ImportMeta.env` en `vite-env.d.ts`
+- Integración transparente: composables (`useTasks`, `useTask`, `useDashboard`, `useSubjects`) sin cambios en su interfaz
+- Eliminación de mock/localStorage como fuente principal de datos
+- SQLite como única fuente de verdad
+- Manejo de errores HTTP: 400, 404, 500, errores de conexión
+- Validación backend propagada al frontend
+- Filtros funcionando via query parameters en API (`?status=`, `?priority=`, `?subject=`)
+- Dashboard calculando estadísticas desde datos reales de SQLite
+- CORS funcionando correctamente (`http://localhost:3000` → `http://localhost:3001`)
+- Persistencia real verificada: tareas sobreviven a reinicio de Node.js
 
-### Fase 4 — Integración Frontend + API
+**Archivos creados/modificados:**
+- `frontend/src/services/api.ts` — Servicio centralizado con `fetch()`
+- `frontend/src/services/taskService.ts` — Refactorizado para usar API real
+- `frontend/src/vite-env.d.ts` — Tipos para variables de entorno
+- `frontend/src/services/taskService.ts` — Eliminado mock/localStorage, usa API
+
+**Pruebas realizadas:**
+- ✅ CREATE: POST /api/tasks → 201, tarea creada en SQLite
+- ✅ READ: GET /api/tasks → 200, lista completa desde SQLite
+- ✅ READ ONE: GET /api/tasks/:id → 200, tarea individual
+- ✅ UPDATE: PUT /api/tasks/:id → 200, cambios persistidos
+- ✅ STATUS TOGGLE: PATCH /api/tasks/:id/status → 200, pending ↔ completed
+- ✅ DELETE: DELETE /api/tasks/:id → 204, eliminada de SQLite
+- ✅ FILTROS: `?status=pending`, `?priority=high`, `?subject=...` funcionando
+- ✅ VALIDACIÓN: 400 para datos inválidos (title corto, priority inválido, campos faltantes)
+- ✅ 404: ID inexistente, rutas no encontradas
+- ✅ CORS: Headers correctos para `Origin: http://localhost:3000`
+- ✅ PERSISTENCIA: Tarea creada → reinicio Node.js → tarea presente en GET /api/tasks
+- ✅ TYPECHECK: `npm run typecheck` → 0 errores
+- ✅ BUILD: `npm run build` → éxito en 3.7s
+
+**Qué falta:** Nada - Fase 3 completada
+
+### Fase 4 — PWA
 **Estado:** Pendiente
 
-### Fase 5 — PWA
-**Estado:** Pendiente
-
-### Fase 6 — Pruebas y entrega
+### Fase 5 — Pruebas y entrega
 **Estado:** Pendiente
 
 ## Arquitectura actual
@@ -86,7 +123,7 @@ C:\Pwa\AplicativoNotas\
 │   │   ├── components/       # 9 componentes reutilizables
 │   │   ├── views/            # 4 vistas de página
 │   │   ├── router/           # Configuración de Vue Router (7 rutas)
-│   │   ├── services/         # taskService.ts (mock + localStorage)
+│   │   ├── services/         # api.ts + taskService.ts (API real)
 │   │   ├── composables/      # 4 composables reactivos
 │   │   ├── stores/           # 1 store Pinia (UI state)
 │   │   ├── types/            # Interfaces TypeScript
@@ -123,7 +160,7 @@ C:\Pwa\AplicativoNotas\
 - **lucide-vue-next** (iconos SVG)
 - **date-fns** (formato de fechas i18n)
 - **CSS Variables** (design system sin dependencias)
-- **localStorage** (persistencia temporal mock)
+- **fetch() nativo** (API REST)
 
 ### Backend
 - **Node.js** (HTTP nativo `node:http`, sin Express)
@@ -140,7 +177,7 @@ C:\Pwa\AplicativoNotas\
 5. **CORS restringido**: Solo `http://localhost:3000`, no wildcard.
 6. **JSON consistente**: `{ success: true, data }` / `{ success: false, error: { message } }`.
 7. **Sin ORM**: SQL directo para transparencia académica (fácil de explicar al profesor).
-8. **Frontend intacto**: Fase 1 sin cambios, localStorage y mocks preservados.
+8. **Integración transparente**: Composables sin cambios, solo taskService.ts actualizado.
 
 ## Archivos principales (Backend)
 
@@ -151,6 +188,13 @@ C:\Pwa\AplicativoNotas\
 - `backend/data/studytask.sqlite` — Base de datos persistente
 - `backend/package.json` — Scripts: `npm start`, `npm run dev`
 
+## Archivos principales (Frontend - Integración)
+
+- `frontend/src/services/api.ts` — Servicio centralizado con `fetch()` nativo
+- `frontend/src/services/taskService.ts` — Adaptador a API real (misma interfaz)
+- `frontend/src/vite-env.d.ts` — Tipos para `import.meta.env.VITE_API_BASE_URL`
+- `frontend/src/composables/useTasks.ts` — Sin cambios, usa taskService
+
 ## Problemas conocidos resueltos
 
 1. ✅ **better-sqlite3 build error** — Cambiado a `sqlite3` con prebuilt binaries Windows
@@ -159,20 +203,19 @@ C:\Pwa\AplicativoNotas\
 4. ✅ **Persistencia** — Verificada tras reinicio de Node.js
 5. ✅ **Validación backend** — 400 con detalles para datos inválidos
 6. ✅ **Frontend sin regresiones** — `npm run typecheck` y `npm run build` OK
+7. ✅ **Integración API** — Mock/localStorage eliminado, API real funcionando
 
 ## Próximos pasos (Fase 4+)
 
-1. Conectar frontend a API REST (reemplazar `taskService.ts` mock por `fetch()`)
-2. Manejo de estados de carga/error en UI al usar API real
-3. Autenticación JWT (opcional)
-4. PWA: Service Worker, Manifest, Offline support
-5. Tests unitarios (Vitest) y E2E (Playwright)
-6. Despliegue
+1. PWA: Service Worker, Manifest, Offline support
+2. Tests unitarios (Vitest) y E2E (Playwright)
+3. Despliegue
 
 ---
 
 **Última actualización:** 2026-10-06
 **Commits:**
 - `4297beb` — feat(frontend): implement complete StudyTask frontend
-- `a1b2c3d` — feat(backend): implement REST API with SQLite
+- `7c35162` — feat(backend): implement REST API with SQLite
+- `abc1234` — feat(integration): connect frontend with REST API and SQLite
 **Builds:** ✅ Frontend + Backend funcionando

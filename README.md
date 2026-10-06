@@ -8,8 +8,9 @@ Una aplicación web para gestión de tareas académicas, diseñada para estudian
 
 ✅ **Fase 1 — Frontend COMPLETADA**
 ✅ **Fase 2 — Backend + API REST + SQLite COMPLETADA**
+✅ **Fase 3 — Integración Frontend + API REST + SQLite COMPLETADA**
 
-La aplicación frontend está completamente funcional. El backend provee una API REST con SQLite. La integración frontend + API será la Fase 3.
+La aplicación está completamente funcional con persistencia real en SQLite.
 
 ## Tecnologías
 
@@ -22,6 +23,7 @@ La aplicación frontend está completamente funcional. El backend provee una API
 - **lucide-vue-next** — Iconos SVG
 - **date-fns** — Formato de fechas i18n (español)
 - **CSS Variables** — Design system personalizado sin dependencias
+- **fetch() nativo** — Consumo de API REST
 
 ### Backend
 - **Node.js** — HTTP nativo (`node:http`), sin Express
@@ -36,7 +38,7 @@ La aplicación frontend está completamente funcional. El backend provee una API
 - **Lista de tareas** — Filtros por estado, prioridad, materia, búsqueda
 - **Crear/Editar tarea** — Formulario validado en tiempo real
 - **Detalle de tarea** — Vista completa + acciones (editar, completar, eliminar)
-- **CRUD visual completo** con datos mock + localStorage
+- **CRUD visual completo** integrado con API REST real
 - **Responsive mobile-first** (móvil, tablet, desktop)
 - **Accesibilidad básica** (ARIA, focus visible, teclado)
 
@@ -50,16 +52,24 @@ La aplicación frontend está completamente funcional. El backend provee una API
 - **Seed automático** (12 tareas si BD vacía)
 - **Persistencia real** tras reinicio
 
+### Integración (Fase 3)
+- **API REST real** como única fuente de datos
+- **fetch() nativo** en `frontend/src/services/api.ts`
+- **SQLite** como fuente de verdad única
+- **Persistencia verificada** tras reinicio de Node.js
+- **CORS** funcionando correctamente
+- **Validación backend** propagada al frontend
+
 ## Estructura del proyecto
 
 ```
 C:\Pwa\AplicativoNotas\
-├── frontend/                 # Aplicación Vue (Fase 1)
+├── frontend/                 # Aplicación Vue (Fase 1 + 3)
 │   ├── src/
 │   │   ├── components/       # 9 componentes reutilizables
 │   │   ├── views/            # 4 vistas de página
 │   │   ├── router/           # 7 rutas
-│   │   ├── services/         # taskService.ts (mock + localStorage)
+│   │   ├── services/         # api.ts + taskService.ts (API real)
 │   │   ├── composables/      # 4 composables reactivos
 │   │   ├── stores/           # 1 store Pinia
 │   │   ├── types/            # Interfaces TypeScript
@@ -161,7 +171,7 @@ curl http://localhost:3001/api/tasks
 |------|-------------|--------|
 | 1 | Frontend (Vue 3 + TS) | ✅ Completada |
 | 2 | Backend + API REST + SQLite | ✅ Completada |
-| 3 | Integración Frontend + API | ⏳ Pendiente |
+| 3 | Integración Frontend + API | ✅ Completada |
 | 4 | PWA (Service Worker, Offline) | ⏳ Pendiente |
 | 5 | Pruebas y entrega | ⏳ Pendiente |
 
