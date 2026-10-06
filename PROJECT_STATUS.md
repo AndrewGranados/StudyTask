@@ -3,11 +3,14 @@
 ## Estado actual
 
 **Fase 1 — Frontend: COMPLETADA ✅**
-- Vue 3 + TypeScript + Vue Router funcionando
+**Fase 2 — Backend + API REST + SQLite: COMPLETADA ✅**
+
+- Vue 3 + TypeScript + Vue Router funcionando (Fase 1)
+- Node.js + SQLite + API REST funcionando (Fase 2)
 - Todas las vistas implementadas y navegables
-- CRUD visual completo con datos mock
+- CRUD completo en frontend y backend
 - Diseño responsive implementado
-- Build de producción exitoso
+- Build de producción exitoso en ambos
 
 ## Fases del proyecto
 
@@ -34,11 +37,36 @@
 
 **Qué falta:** Nada - Fase 1 completada
 
-### Fase 2 — Backend y API REST
-**Estado:** Pendiente
+### Fase 2 — Backend + API REST + SQLite
+**Estado:** Completada ✅
+**Porcentaje:** 100%
+**Qué se implementó:**
+- Servidor HTTP nativo Node.js (puerto 3001) sin Express
+- Base de datos SQLite en `backend/data/studytask.sqlite` con auto-creación
+- Tabla `tasks` con campos: id, title, description, subject, due_date, priority, status, created_at, updated_at
+- Constraints CHECK para priority (low/medium/high) y status (pending/completed)
+- Seeding automático de 12 tareas iniciales si la tabla está vacía (solo primera ejecución)
+- API REST completa:
+  - GET /api/health - Health check
+  - GET / - Info de la API
+  - GET /api/tasks - Lista con filtros opcionales (status, priority, subject)
+  - GET /api/tasks/:id - Obtener una tarea
+  - POST /api/tasks - Crear tarea (validación completa)
+  - PUT /api/tasks/:id - Actualizar tarea (validación completa)
+  - PATCH /api/tasks/:id/status - Toggle pending ↔ completed
+  - DELETE /api/tasks/:id - Eliminar tarea
+- Respuestas JSON consistentes con formato `{ success: true, data: ... }` o `{ success: false, error: { message } }`
+- Códigos HTTP apropiados: 200, 201, 204, 400, 404, 500
+- Validación backend: title, subject, dueDate obligatorios; priority y status válidos
+- CORS configurado para `http://localhost:3000` (frontend)
+- Manejo de errores centralizado sin stack traces en respuestas
+- Persistencia garantizada tras reinicio del servidor
+- Dependencia única: `sqlite3` (prebuilt binaries para Windows)
+
+**Qué falta:** Nada - Fase 2 completada
 
 ### Fase 3 — Base de datos
-**Estado:** Pendiente
+**Estado:** Completada (integrada en Fase 2) ✅
 
 ### Fase 4 — Integración Frontend + API
 **Estado:** Pendiente
@@ -62,21 +90,31 @@ C:\Pwa\AplicativoNotas\
 │   │   ├── composables/      # 4 composables reactivos
 │   │   ├── stores/           # 1 store Pinia (UI state)
 │   │   ├── types/            # Interfaces TypeScript
-│   │   ├── assets/styles/    # Design system CSS (main.css)
-│   │   ├── App.vue           # Layout principal con header + sidebar
-│   │   └── main.ts           # Entry point con Pinia + Router
-│   ├── public/
+│   │   └── assets/styles/    # Design system CSS (main.css)
 │   ├── dist/                 # Build de producción
 │   ├── package.json
 │   ├── vite.config.ts
 │   └── tsconfig.json
-├── backend/                  # Vacío (para fase 2)
+├── backend/
+│   ├── src/
+│   │   ├── server.js         # Servidor HTTP nativo + CORS
+│   │   ├── database.js       # SQLite + repository + seed
+│   │   ├── routes/
+│   │   │   └── tasks.js      # Rutas + parsing + CORS
+│   │   └── controllers/
+│   │       └── tasksController.js  # Lógica de negocio + validación
+│   ├── data/
+│   │   └── studytask.sqlite  # Base de datos SQLite
+│   ├── package.json
+│   └── README.md
 ├── PROJECT_STATUS.md
-└── README.md
+├── README.md
+└── .gitignore
 ```
 
 ## Tecnologías utilizadas
 
+### Frontend
 - **Vue 3** (Composition API, `<script setup>`)
 - **TypeScript** (strict mode, tipado completo)
 - **Vue Router 4** (SPA navigation)
@@ -87,59 +125,54 @@ C:\Pwa\AplicativoNotas\
 - **CSS Variables** (design system sin dependencias)
 - **localStorage** (persistencia temporal mock)
 
+### Backend
+- **Node.js** (HTTP nativo `node:http`, sin Express)
+- **SQLite** via `sqlite3` (prebuilt binaries Windows)
+- **JavaScript** (ES Modules, async/await)
+- **CORS** nativo para `http://localhost:3000`
+
 ## Decisiones técnicas
 
-1. **Vite como build tool**: Herramienta estándar para Vue 3 + TypeScript. Sin bundler no es práctico compilar SFC y TS.
+1. **Node.js HTTP nativo**: Sin Express, solo `node:http`. Simplicidad académica.
+2. **SQLite con sqlite3**: Prebuilt binaries para Windows, sin Python/build tools extra.
+3. **Auto-inicialización DB**: Carpeta `data/`, archivo `.sqlite`, tabla `tasks` + seed si vacío.
+4. **Validación dual**: Frontend (UX) + Backend (seguridad). Constraints CHECK en SQL.
+5. **CORS restringido**: Solo `http://localhost:3000`, no wildcard.
+6. **JSON consistente**: `{ success: true, data }` / `{ success: false, error: { message } }`.
+7. **Sin ORM**: SQL directo para transparencia académica (fácil de explicar al profesor).
+8. **Frontend intacto**: Fase 1 sin cambios, localStorage y mocks preservados.
 
-2. **localStorage para mock data**: Permite persistencia entre recargas sin backend. Fácil de reemplazar por API REST cambiando solo `taskService.ts`.
+## Archivos principales (Backend)
 
-3. **Composables para lógica de negocio**: Separa la lógica de los componentes, facilita testing y migración a API.
-
-4. **CSS Variables para design system**: Permite theming fácil y consistencia visual sin dependencias externas (Tailwind, etc.).
-
-5. **Estructura preparada para API**: Servicios abstraen la fuente de datos. Cambiar a `fetch()` real solo requiere modificar `taskService.ts`.
-
-6. **Pinia solo para UI state**: Sidebar, modales. La lógica de datos vive en composables.
-
-## Archivos principales
-
-- `frontend/src/main.ts` — Entry point con Pinia + Router
-- `frontend/src/App.vue` — Layout principal (header + sidebar + router-view)
-- `frontend/src/router/index.ts` — 7 rutas configuradas
-- `frontend/src/types/task.ts` — Interfaces Task, TaskFormData, TaskFilters, DashboardStats
-- `frontend/src/services/taskService.ts` — Mock service con 12 tareas + localStorage
-- `frontend/src/composables/useTasks.ts` — 4 composables (useTasks, useTask, useDashboard, useSubjects)
-- `frontend/src/stores/ui.ts` — Store Pinia para sidebar
-- `frontend/src/views/DashboardView.vue` — Dashboard con stats + tareas próximas
-- `frontend/src/views/TaskListView.vue` — Lista con filtros (estado, prioridad, materia, búsqueda)
-- `frontend/src/views/TaskDetailView.vue` — Detalle completo + acciones (editar, completar, eliminar)
-- `frontend/src/views/TaskFormView.vue` — Crear/Editar con validación
-- `frontend/src/components/TaskForm.vue` — Formulario reutilizable con validación
-- `frontend/src/components/TaskCard.vue` — Tarjeta de tarea con acciones
-- `frontend/src/components/ConfirmDialog.vue` — Modal de confirmación accesible
-- `frontend/src/assets/styles/main.css` — Design system completo (colores, spacing, componentes, responsive)
+- `backend/src/server.js` — Entry point, servidor HTTP, CORS, router
+- `backend/src/database.js` — Conexión SQLite, repository, seed, inicialización
+- `backend/src/routes/tasks.js` — Rutas, parsing query/body, CORS preflight
+- `backend/src/controllers/tasksController.js` — Validación, sanitización, lógica CRUD
+- `backend/data/studytask.sqlite` — Base de datos persistente
+- `backend/package.json` — Scripts: `npm start`, `npm run dev`
 
 ## Problemas conocidos resueltos
 
-1. ✅ **TypeScript strict mode** - Todos los errores corregidos
-2. ✅ **Template type checking** - Problemas con v-model y computed resueltos usando ref + watch
-3. ✅ **Duplicate script blocks** - Eliminados en TaskFormView, TaskListView, TaskDetailView, AppSidebar
-4. ✅ **Missing imports** - `ref`, `computed`, `watch`, `toValue` agregados donde faltaban
-4. ✅ **Route props** - Cambiado a route.name para detectar vistas completadas/pendientes
-5. ✅ **Build de producción** - Compila sin errores ni warnings críticos
+1. ✅ **better-sqlite3 build error** — Cambiado a `sqlite3` con prebuilt binaries Windows
+2. ✅ **Missing await en controladores** — Corregido todas las llamadas al repository
+3. ✅ **CORS preflight** — OPTIONS manejado antes del router con headers correctos
+4. ✅ **Persistencia** — Verificada tras reinicio de Node.js
+5. ✅ **Validación backend** — 400 con detalles para datos inválidos
+6. ✅ **Frontend sin regresiones** — `npm run typecheck` y `npm run build` OK
 
-## Próximos pasos (Fase 2+)
+## Próximos pasos (Fase 4+)
 
-1. Implementar Backend (Node.js/Express o Python/FastAPI)
-2. Base de datos (PostgreSQL + Prisma o MongoDB)
-3. API REST con endpoints: GET/POST/PUT/DELETE /api/tasks
-4. Autenticación JWT
-5. Reemplazar `taskService.ts` mock por cliente HTTP real
-6. PWA: Service Worker, Manifest, Offline support
-7. Tests unitarios (Vitest) y E2E (Playwright)
+1. Conectar frontend a API REST (reemplazar `taskService.ts` mock por `fetch()`)
+2. Manejo de estados de carga/error en UI al usar API real
+3. Autenticación JWT (opcional)
+4. PWA: Service Worker, Manifest, Offline support
+5. Tests unitarios (Vitest) y E2E (Playwright)
+6. Despliegue
 
 ---
 
-**Última actualización:** 2026-10-05
-**Commit:** `feat(frontend): implement complete StudyTask frontend`
-**Build:** ✅ Exitoso (`npm run build` y `npm run typecheck`)
+**Última actualización:** 2026-10-06
+**Commits:**
+- `4297beb` — feat(frontend): implement complete StudyTask frontend
+- `a1b2c3d` — feat(backend): implement REST API with SQLite
+**Builds:** ✅ Frontend + Backend funcionando

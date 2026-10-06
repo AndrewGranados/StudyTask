@@ -7,11 +7,13 @@ Una aplicación web para gestión de tareas académicas, diseñada para estudian
 ## Estado actual
 
 ✅ **Fase 1 — Frontend COMPLETADA**
+✅ **Fase 2 — Backend + API REST + SQLite COMPLETADA**
 
-La aplicación frontend está completamente funcional con datos mock y localStorage. El backend, base de datos y funcionalidad PWA se implementarán en fases posteriores.
+La aplicación frontend está completamente funcional. El backend provee una API REST con SQLite. La integración frontend + API será la Fase 3.
 
 ## Tecnologías
 
+### Frontend
 - **Vue 3** — Composition API, `<script setup>`
 - **TypeScript** — Tipado estricto (strict mode)
 - **Vue Router 4** — Navegación SPA
@@ -21,150 +23,147 @@ La aplicación frontend está completamente funcional con datos mock y localStor
 - **date-fns** — Formato de fechas i18n (español)
 - **CSS Variables** — Design system personalizado sin dependencias
 
+### Backend
+- **Node.js** — HTTP nativo (`node:http`), sin Express
+- **SQLite** — Base de datos embebida via `sqlite3`
+- **JavaScript** — ES Modules, async/await
+- **CORS nativo** — Para `http://localhost:3000`
+
 ## Características implementadas
 
-### Vistas principales
-- **Dashboard** — Estadísticas resumidas (total, pendientes, completadas, alta prioridad, próximas 7 días) + lista de tareas próximas
-- **Lista de tareas** — Con filtros por estado, prioridad, materia y búsqueda en tiempo real
-- **Crear tarea** — Formulario validado con validación en tiempo real
-- **Editar tarea** — Formulario pre-poblado con datos existentes
-- **Detalle de tarea** — Vista completa con acciones (editar, completar/reabrir, eliminar)
+### Frontend (Fase 1)
+- **Dashboard** — Estadísticas + tareas próximas
+- **Lista de tareas** — Filtros por estado, prioridad, materia, búsqueda
+- **Crear/Editar tarea** — Formulario validado en tiempo real
+- **Detalle de tarea** — Vista completa + acciones (editar, completar, eliminar)
+- **CRUD visual completo** con datos mock + localStorage
+- **Responsive mobile-first** (móvil, tablet, desktop)
+- **Accesibilidad básica** (ARIA, focus visible, teclado)
 
-### Funcionalidades CRUD
-- ✅ Crear tareas con validación (título, materia, fecha obligatorios)
-- ✅ Leer tareas (lista paginada y vista detalle)
-- ✅ Actualizar tareas (editar campos + cambiar estado pendiente/completado)
-- ✅ Eliminar tareas (con diálogo de confirmación accesible)
-
-### UX/UI
-- Diseño **responsive mobile-first** (funciona en móvil, tablet, desktop)
-- Paleta de colores profesional (verde primario #10B981, neutros oscuros, superficies blancas)
-- Iconografía consistente y semántica
-- Estados vacíos informativos con call-to-action
-- Validación de formularios en tiempo real con mensajes claros
-- Accesibilidad básica: ARIA labels, focus visible, labels asociados, navegación por teclado, contraste adecuado
-- Sin scroll horizontal accidental, botones táctiles cómodos (44px mínimo)
-
-### Arquitectura
-- Separación clara frontend/backend (carpeta `backend/` vacía lista para Fase 2)
-- Servicios abstraídos para fácil migración a API REST (`taskService.ts`)
-- Composables reactivos para lógica de negocio (`useTasks`, `useTask`, `useDashboard`, `useSubjects`)
-- TypeScript en todo el código con interfaces compartidas
-- Pinia solo para estado de UI global (sidebar)
+### Backend (Fase 2)
+- **API REST completa** en `http://localhost:3001`
+- **SQLite** en `backend/data/studytask.sqlite` (auto-creación)
+- **Endpoints**: GET/POST/PUT/PATCH/DELETE `/api/tasks`
+- **Filtros**: `?status=`, `?priority=`, `?subject=`
+- **Validación backend** + constraints SQL
+- **CORS** para `http://localhost:3000`
+- **Seed automático** (12 tareas si BD vacía)
+- **Persistencia real** tras reinicio
 
 ## Estructura del proyecto
 
 ```
 C:\Pwa\AplicativoNotas\
-├── frontend/                 # Aplicación Vue
+├── frontend/                 # Aplicación Vue (Fase 1)
 │   ├── src/
 │   │   ├── components/       # 9 componentes reutilizables
 │   │   ├── views/            # 4 vistas de página
-│   │   ├── router/           # Configuración de rutas (7 rutas)
-│   │   ├── services/         # Servicios de datos (taskService)
-│   │   ├── composables/      # Lógica reactiva (4 composables)
-│   │   ├── stores/           # 1 store Pinia (UI state)
+│   │   ├── router/           # 7 rutas
+│   │   ├── services/         # taskService.ts (mock + localStorage)
+│   │   ├── composables/      # 4 composables reactivos
+│   │   ├── stores/           # 1 store Pinia
 │   │   ├── types/            # Interfaces TypeScript
 │   │   └── assets/styles/    # Design system CSS
-│   ├── public/
-│   ├── dist/                 # Build de producción
+│   ├── dist/                 # Build producción
 │   └── package.json
-├── backend/                  # Pendiente (Fase 2)
-├── PROJECT_STATUS.md         # Seguimiento técnico detallado
-└── README.md
+├── backend/                  # API REST + SQLite (Fase 2)
+│   ├── src/
+│   │   ├── server.js         # HTTP nativo + CORS
+│   │   ├── database.js       # SQLite + repository + seed
+│   │   ├── routes/tasks.js   # Rutas + parsing
+│   │   └── controllers/tasksController.js  # Validación + CRUD
+│   ├── data/studytask.sqlite # BD SQLite
+│   └── package.json
+├── PROJECT_STATUS.md         # Seguimiento técnico
+├── README.md
+└── .gitignore
 ```
 
-## Rutas disponibles
+## Rutas disponibles (Frontend)
 
 | Ruta | Nombre | Descripción |
 |------|--------|-------------|
-| `/` | Dashboard | Vista principal con estadísticas y tareas próximas |
-| `/tasks` | TaskList | Todas las tareas con filtros |
-| `/tasks/new` | TaskCreate | Crear nueva tarea |
-| `/tasks/:id` | TaskDetail | Ver detalle completo + acciones |
-| `/tasks/:id/edit` | TaskEdit | Editar tarea existente |
-| `/completed` | CompletedTasks | Solo tareas completadas |
-| `/pending` | PendingTasks | Solo tareas pendientes |
+| `/` | Dashboard | Stats + próximas tareas |
+| `/tasks` | TaskList | Todas con filtros |
+| `/tasks/new` | TaskCreate | Crear tarea |
+| `/tasks/:id` | TaskDetail | Detalle + acciones |
+| `/tasks/:id/edit` | TaskEdit | Editar tarea |
+| `/completed` | CompletedTasks | Solo completadas |
+| `/pending` | PendingTasks | Solo pendientes |
+
+## Endpoints API (Backend)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| GET | `/api/tasks` | Listar (filtros: status, priority, subject) |
+| GET | `/api/tasks/:id` | Obtener una |
+| POST | `/api/tasks` | Crear |
+| PUT | `/api/tasks/:id` | Actualizar |
+| PATCH | `/api/tasks/:id/status` | Toggle pending ↔ completed |
+| DELETE | `/api/tasks/:id` | Eliminar |
 
 ## Modelo de datos
 
 ```typescript
 interface Task {
-  id: string              // UUID
-  title: string           // Obligatorio, min 3 chars
-  description: string     // Opcional, max 500 chars
-  subject: string         // Obligatorio (materia académica)
-  dueDate: string         // ISO 8601, fecha futura
+  id: number
+  title: string
+  description: string
+  subject: string
+  dueDate: string      // YYYY-MM-DD
   priority: 'low' | 'medium' | 'high'
   status: 'pending' | 'completed'
-  createdAt: string       // ISO 8601
-  updatedAt: string       // ISO 8601
+  createdAt: string    // ISO 8601
+  updatedAt: string    // ISO 8601
 }
 ```
 
-## Datos de ejemplo incluidos
-
-12 tareas académicas realistas cubriendo:
-- **Materias:** Desarrollo Web, Bases de Datos, Ingeniería de Software, Programación, Sistemas Operativos, Redes, Desarrollo Móvil
-- **Estados:** 7 pendientes, 5 completadas
-- **Prioridades:** 3 alta, 5 media, 4 baja
-- **Fechas:** Distribuidas entre 7 y 25 días
-
-## Cómo ejecutar el frontend
+## Cómo ejecutar
 
 ### Prerrequisitos
 - Node.js 18+
 - npm 9+
 
-### Instalación
+### Frontend (puerto 3000)
 ```bash
 cd frontend
 npm install
+npm run dev        # http://localhost:3000
+npm run build      # Build producción
+npm run typecheck  # Verificación tipos
 ```
 
-### Desarrollo
+### Backend (puerto 3001)
 ```bash
-npm run dev
-# Abre http://localhost:3000
+cd backend
+npm install
+npm start          # http://localhost:3001
+npm run dev        # Watch mode (Node 18+)
 ```
 
-### Build de producción
+### Verificación completa
 ```bash
-npm run build
-# Genera carpeta dist/ lista para deploy
+# Terminal 1 - Backend
+cd backend && npm start
+
+# Terminal 2 - Frontend
+cd frontend && npm run dev
+
+# Probar API
+curl http://localhost:3001/api/health
+curl http://localhost:3001/api/tasks
 ```
 
-### Verificación de tipos
-```bash
-npm run typecheck
-# vue-tsc --noEmit (strict mode)
-```
-
-### Linting
-```bash
-npm run lint
-```
-
-## Verificación rápida
-
-```bash
-cd frontend
-npm install      # ~2 min
-npm run typecheck  # ✅ Sin errores
-npm run build      # ✅ Build exitoso (~3.8s)
-npm run dev        # ✅ Servidor en http://localhost:3000
-```
-
-## Fases futuras
+## Fases del proyecto
 
 | Fase | Descripción | Estado |
 |------|-------------|--------|
-| 1 | Frontend (actual) | ✅ Completada |
-| 2 | Backend + API REST | ⏳ Pendiente |
-| 3 | Base de datos | ⏳ Pendiente |
-| 4 | Integración Frontend + API | ⏳ Pendiente |
-| 5 | PWA (Service Worker, Manifest, Offline) | ⏳ Pendiente |
-| 6 | Pruebas y entrega | ⏳ Pendiente |
+| 1 | Frontend (Vue 3 + TS) | ✅ Completada |
+| 2 | Backend + API REST + SQLite | ✅ Completada |
+| 3 | Integración Frontend + API | ⏳ Pendiente |
+| 4 | PWA (Service Worker, Offline) | ⏳ Pendiente |
+| 5 | Pruebas y entrega | ⏳ Pendiente |
 
 ## Repositorio
 
