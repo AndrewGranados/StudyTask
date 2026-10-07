@@ -44,6 +44,10 @@ export const taskService = {
     return await api.deleteTask(id)
   },
 
+  async toggleTaskStatus(id: string): Promise<Task | null> {
+    return await api.toggleTaskStatus(id)
+  },
+
   async getDashboardStats(): Promise<DashboardStats> {
     return await api.getDashboardStats()
   },

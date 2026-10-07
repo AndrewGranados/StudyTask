@@ -38,6 +38,20 @@ watch(
   { deep: true }
 )
 
+watch(
+  () => route.name,
+  () => {
+    if (route.name === 'CompletedTasks') {
+      taskStore.setFilters({ status: 'completed' })
+    } else if (route.name === 'PendingTasks') {
+      taskStore.setFilters({ status: 'pending' })
+    } else {
+      taskStore.clearFilters()
+    }
+    taskStore.loadTasks()
+  }
+)
+
 const handleSearch = () => {
   taskStore.setFilters({ search: searchQuery.value })
 }

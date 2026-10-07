@@ -2,7 +2,7 @@
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { RouterLink } from 'vue-router'
-import { Calendar, Flag, Circle, CheckCircle2, Trash2, Edit2 } from 'lucide-vue-next'
+import { Calendar, Flag, Circle, Square, CheckCircle2, Trash2, Edit2 } from 'lucide-vue-next'
 import TaskPriorityBadge from '@/components/TaskPriorityBadge.vue'
 import TaskStatusBadge from '@/components/TaskStatusBadge.vue'
 import type { Task } from '@/types/task'
@@ -70,16 +70,16 @@ const getPriorityIcon = (priority: Task['priority']) => {
         @click="emit('toggle', task.id)"
         aria-label="Marcar como completada"
       >
-        <CheckCircle2 class="icon" :size="18" aria-hidden="true" />
+        <Square class="icon" :size="18" aria-hidden="true" />
       </button>
 
       <button
         v-else
-        class="btn btn-ghost btn-sm btn-icon"
+        class="btn btn-ghost btn-sm btn-icon text-success"
         @click="emit('toggle', task.id)"
         aria-label="Marcar como pendiente"
       >
-        <Circle class="icon" :size="18" aria-hidden="true" />
+        <CheckCircle2 class="icon" :size="18" aria-hidden="true" />
       </button>
 
       <RouterLink

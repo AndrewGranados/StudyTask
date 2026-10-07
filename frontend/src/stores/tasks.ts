@@ -82,7 +82,7 @@ export const useTaskStore = defineStore('tasks', () => {
   async function toggleStatus(id: string) {
     const task = tasks.value.find(t => t.id === id)
     if (task) {
-      return updateTask(id, { status: task.status === 'pending' ? 'completed' : 'pending' })
+      return taskService.toggleTaskStatus(id)
     }
     return null
   }
