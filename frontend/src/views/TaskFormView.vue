@@ -28,53 +28,10 @@ const formData = ref<TaskFormData>({
   priority: 'medium',
 })
 
-const errors = ref<Partial<Record<keyof TaskFormData, string>>>({})
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
 
 const today = new Date().toISOString().split('T')[0]
-
-const isValid = computed(() =>
-  formData.value.title.trim() &&
-  formData.value.subject.trim() &&
-  formData.value.dueDate &&
-  !Object.values(errors.value).some(e => e)
-)
-
-function validateField(field: keyof TaskFormData) {
-  switch (field) {
-    case 'title':
-      if (!formData.value.title.trim()) {
-        errors.value.title = 'El título es obligatorio'
-      } else if (formData.value.title.trim().length < 3) {
-        errors.value.title = 'El título debe tener al menos 3 caracteres'
-      } else {
-        errors.value.title = undefined
-      }
-      break
-    case 'subject':
-      if (!formData.value.subject.trim()) {
-        errors.value.subject = 'La materia es obligatoria'
-      } else {
-        errors.value.subject = undefined
-      }
-      break
-    case 'dueDate':
-      if (!formData.value.dueDate) {
-        errors.value.dueDate = 'La fecha límite es obligatoria'
-      } else {
-        errors.value.dueDate = undefined
-      }
-      break
-  }
-}
-
-function validateForm() {
-  validateField('title')
-  validateField('subject')
-  validateField('dueDate')
-  return isValid.value
-}
 
 async function loadExistingTask() {
   await loadExistingTaskData()
@@ -90,7 +47,12 @@ async function loadExistingTask() {
 }
 
 async function handleSubmit(data: TaskFormData) {
-  if (!validateForm()) return
+  // Validate the data received from the child component (which already validated)
+  if (!data.title.trim() || !data.subject.trim() || !data.dueDate) {
+    submitError.value = 'Por favor completa todos los campos obligatorios'
+    showError('Por favor completa todos los campos obligatorios')
+    return
+  }
 
   submitting.value = true
   submitError.value = null

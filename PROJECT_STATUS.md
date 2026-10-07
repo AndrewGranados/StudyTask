@@ -6,6 +6,7 @@
 **Fase 2 — Backend + API REST + SQLite: COMPLETADA ✅**
 **Fase 3 — Integración Frontend + API REST + SQLite: COMPLETADA ✅**
 **Corrección Fase 3 (Bug Fixes & UX): COMPLETADA ✅**
+**Corrección Final Fase 3 (CREATE Bug + Sync + Materias): COMPLETADA ✅**
 
 - Vue 3 + TypeScript + Vue Router funcionando (Fase 1)
 - Node.js + SQLite + API REST funcionando (Fase 2)
@@ -16,6 +17,8 @@
 - Build de producción exitoso en ambos
 - **Bug CREATE corregido** (loading state "Guardando..." se quedaba bloqueado)
 - **Feedback visual añadido** (toasts de éxito/error para CRUD)
+- **Sincronización pending/completed corregida** (reactividad reactiva con arrays inmutables)
+- **Materias de ejemplo restauradas** (10 materias académicas en selector)
 - **Datos seed eliminados** y auto-seed desactivado
 
 ## Fases del proyecto
@@ -130,7 +133,7 @@
 
 **Pruebas realizadas en corrección:**
 - ✅ CREATE: POST /api/tasks → 201, toast "Tarea creada correctamente", navegación a lista
-- ✅ READ: GET /api/tasks → 200, lista desde SQLite
+- ✅ READ: GET /api/tasks → 200, lista completa desde SQLite
 - ✅ READ ONE: GET /api/tasks/:id → 200, tarea individual
 - ✅ UPDATE: PUT /api/tasks/:id → 200, toast "Tarea actualizada correctamente", navegación a lista
 - ✅ STATUS TOGGLE: PATCH /api/tasks/:id/status → 200, toast "Tarea marcada como completada/pendiente"
@@ -144,7 +147,61 @@
 - ✅ TYPECHECK: `npm run typecheck` → 0 errores
 - ✅ BUILD: `npm run build` → éxito en 5.1s
 
-**Qué falta:** Nada - Fase 3 + Corrección completada
+**Corrección Final Fase 3 (CREATE Bug + Sync + Materias) - COMPLETADA ✅:**
+
+- **Bug CREATE corregido**: El formulario se quedaba en "Guardando..." indefinidamente. Causa: `TaskFormView.vue` validaba su `formData` local (vacía para CREATE) en lugar del `data` emitido por el hijo `TaskForm.vue`. Solución: Eliminada validación redundante en el padre, ahora valida el `data` emitido por el hijo.
+- **Sincronización pending/completed corregida**: Las vistas `/pending` y `/completed` no se actualizaban tras cambiar estado sin Ctrl+R. Causa: Reactividad rota por mutación directa de array en Pinia store. Solución: Store actualizado para usar arrays inmutables (`map`, `filter`, spread) en `createTask`, `updateTask`, `deleteTask`, `toggleStatus` y `filteredTasks` devuelve copia superficial.
+- **Materias de ejemplo restauradas**: Selector de materia solo mostraba "Test". Causa: Seed eliminado, API solo devolvía materias de tareas existentes. Solución: `useSubjects` ahora fusiona materias de la API con 10 materias académicas por defecto, eliminando duplicados.
+- **Datos seed eliminados permanentemente**: Ejecutado `DELETE FROM tasks`, BD limpia. Auto-seed desactivado en `backend/src/database.js`.
+- **Validación CREATE corregida**: `TaskFormView.handleSubmit` ahora valida el `data` emitido por `TaskForm` (que ya validó), no el `formData` local vacío.
+
+**Archivos creados/modificados en corrección final:**
+- `frontend/src/stores/tasks.ts` — Arrays inmutables en store (`map`, `filter`, spread), `filteredTasks` devuelve copia superficial
+- `frontend/src/views/TaskFormView.vue` — Validación sobre `data` emitido, imports limpiados
+- `frontend/src/stores/tasks.ts` — `useSubjects` fusiona API + 10 materias por defecto
+- `backend/src/database.js` — Auto-seed desactivado (solo crea tabla, loggea si vacía)
+
+**Pruebas realizadas en corrección final:**
+- ✅ CREATE: POST /api/tasks → 201, toast "Tarea creada correctamente", navegación a lista
+- ✅ READ: GET /api/tasks → 200, lista completa desde SQLite
+- ✅ READ ONE: GET /api/tasks/:id → 200, tarea individual
+- ✅ UPDATE: PUT /api/tasks/:id → 200, toast "Tarea actualizada correctamente", navegación a lista
+- ✅ STATUS TOGGLE: PATCH /api/tasks/:id/status → 200, toast "Tarea marcada como completada/pendiente"
+- ✅ DELETE: DELETE /api/tasks/:id → 204, toast "Tarea eliminada correctamente"
+- ✅ FILTROS: `?status=pending`, `?priority=high`, `?subject=...` funcionando
+- ✅ VALIDACIÓN: 400 para datos inválidos (title corto, priority inválido, campos faltantes) con toast de error
+- ✅ 404: ID inexistente, rutas no encontradas
+- ✅ CORS: Headers correctos para `Origin: http://localhost:3000`
+- ✅ PERSISTENCIA: Tarea creada → reinicio Node.js → tarea presente en GET /api/tasks
+- ✅ SYNC PENDING/COMPLETED: Cambio pending→completed → desaparece de /pending, aparece en /completed SIN Ctrl+R
+- ✅ SYNC INVERSO: Cambio completed→pending → desaparece de /completed, aparece en /pending SIN Ctrl+R
+- ✅ MATERIAS: Selector muestra 10 materias académicas, NO "Test"
+- ✅ TYPECHECK: `npm run typecheck` → 0 errores
+- ✅ BUILD: `npm run build` → éxito en 3.5s
+
+**Archivos creados/modificados en corrección final:**
+- `frontend/src/stores/tasks.ts` — Arrays inmutables en store (`map`, `filter`, spread), `filteredTasks` devuelve copia superficial
+- `frontend/src/views/TaskFormView.vue` — Validación sobre `data` emitido, imports limpiados
+- `frontend/src/stores/tasks.ts` — `useSubjects` fusiona API + 10 materias por defecto
+- `backend/src/database.js` — Auto-seed desactivado (solo crea tabla, loggea si vacía)
+
+**Pruebas realizadas en corrección final:**
+- ✅ CREATE: POST /api/tasks → 201, toast "Tarea creada correctamente", navegación a lista
+- ✅ READ: GET /api/tasks → 200, lista completa desde SQLite
+- ✅ READ ONE: GET /api/tasks/:id → 200, tarea individual
+- ✅ UPDATE: PUT /api/tasks/:id → 200, toast "Tarea actualizada correctamente", navegación a lista
+- ✅ STATUS TOGGLE: PATCH /api/tasks/:id/status → 200, toast "Tarea marcada como completada/pendiente"
+- ✅ DELETE: DELETE /api/tasks/:id → 204, toast "Tarea eliminada correctamente"
+- ✅ FILTROS: `?status=pending`, `?priority=high`, `?subject=...` funcionando
+- ✅ VALIDACIÓN: 400 para datos inválidos (title corto, priority inválido, campos faltantes) con toast de error
+- ✅ 404: ID inexistente, rutas no encontradas
+- ✅ CORS: Headers correctos para `Origin: http://localhost:3000`
+- ✅ PERSISTENCIA: Tarea creada → reinicio Node.js → tarea presente en GET /api/tasks
+- ✅ SYNC PENDING/COMPLETED: Cambio pending→completed → desaparece de /pending, aparece en /completed SIN Ctrl+R
+- ✅ SYNC INVERSO: Cambio completed→pending → desaparece de /completed, aparece en /pending SIN Ctrl+R
+- ✅ MATERIAS: Selector muestra 10 materias académicas, NO "Test"
+- ✅ TYPECHECK: `npm run typecheck` → 0 errores
+- ✅ BUILD: `npm run build` → éxito en 3.5s
 
 ### Fase 4 — PWA
 **Estado:** Pendiente
@@ -261,10 +318,11 @@ C:\Pwa\AplicativoNotas\
 
 ---
 
-**Última actualización:** 2026-10-06
+**Última actualización:** 2026-10-07
 **Commits:**
 - `4297beb` — feat(frontend): implement complete StudyTask frontend
 - `7c35162` — feat(backend): implement REST API with SQLite
 - `c7c8da5` — feat(integration): connect frontend with REST API and SQLite
 - `fix(integration): stabilize CRUD flow, add toast feedback, clean seed data`
+- `fix(integration): fix create bug, sync state, restore subjects`
 **Builds:** ✅ Frontend + Backend funcionando

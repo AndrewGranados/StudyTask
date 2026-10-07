@@ -9,7 +9,7 @@ export const useTaskStore = defineStore('tasks', () => {
   const error = ref<string | null>(null)
   const filters = ref<TaskFilters>({})
 
-  const filteredTasks = computed(() => tasks.value)
+  const filteredTasks = computed(() => [...tasks.value])
 
   async function loadTasks() {
     loading.value = true
@@ -29,7 +29,7 @@ export const useTaskStore = defineStore('tasks', () => {
     error.value = null
     try {
       const newTask = await taskService.create(data)
-      tasks.value.unshift(newTask)
+      tasks.value = [newTask, ...tasks.value]
       return newTask
     } catch (e) {
       error.value = 'Error al crear la tarea'
@@ -48,7 +48,7 @@ export const useTaskStore = defineStore('tasks', () => {
       if (updated) {
         const index = tasks.value.findIndex(t => t.id === id)
         if (index !== -1) {
-          tasks.value[index] = updated
+          tasks.value = tasks.value.map((t, i) => i === index ? updated : t)
         }
       }
       return updated
