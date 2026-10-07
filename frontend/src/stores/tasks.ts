@@ -1,8 +1,9 @@
-import { ref, computed, toValue, watchEffect } from 'vue'
+import { defineStore } from 'pinia'
+import { ref, computed, watchEffect, toValue } from 'vue'
 import type { Task, TaskFormData, TaskFilters, DashboardStats } from '@/types/task'
 import { taskService } from '@/services/taskService'
 
-export function useTasks() {
+export const useTaskStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -107,7 +108,7 @@ export function useTasks() {
     setFilters,
     clearFilters,
   }
-}
+})
 
 export function useTask(id: string | null | (() => string | null)) {
   const task = ref<Task | null>(null)
@@ -185,10 +186,39 @@ export function useSubjects() {
     loading.value = true
     error.value = null
     try {
-      subjects.value = await taskService.getSubjects()
+      const apiSubjects = await taskService.getSubjects()
+      // Always include default subjects, merged with API subjects
+      const defaultSubjects: string[] = [
+        'Programación',
+        'Bases de Datos',
+        'Desarrollo Web',
+        'Desarrollo Móvil',
+        'Arquitectura de Software',
+        'Redes',
+        'Sistemas Operativos',
+        'Ingeniería de Software',
+        'Seguridad Informática',
+        'Inteligencia Artificial'
+      ]
+      // Merge API subjects with default subjects, removing duplicates
+      const allSubjects = [...new Set([...apiSubjects, ...defaultSubjects])]
+      subjects.value = allSubjects
     } catch (e) {
       error.value = 'Error al cargar las materias'
       console.error(e)
+      const defaultSubjects: string[] = [
+        'Programación',
+        'Bases de Datos',
+        'Desarrollo Web',
+        'Desarrollo Móvil',
+        'Arquitectura de Software',
+        'Redes',
+        'Sistemas Operativos',
+        'Ingeniería de Software',
+        'Seguridad Informática',
+        'Inteligencia Artificial'
+      ]
+      subjects.value = defaultSubjects
     } finally {
       loading.value = false
     }

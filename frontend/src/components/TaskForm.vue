@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useSubjects } from '@/composables/useTasks'
+import { useSubjects } from '@/stores/tasks'
 import type { TaskFormData, TaskPriority } from '@/types/task'
 
 interface Props {

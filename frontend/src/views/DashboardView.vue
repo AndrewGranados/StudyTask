@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useDashboard } from '@/composables/useTasks'
-import { useTasks } from '@/composables/useTasks'
+import { useTaskStore, useDashboard } from '@/stores/tasks'
 import StatCard from '@/components/StatCard.vue'
 import TaskCard from '@/components/TaskCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { RouterLink } from 'vue-router'
 import { Users, CheckCircle2, Clock, Flag, Calendar, TrendingUp, Plus } from 'lucide-vue-next'
 
+const taskStore = useTaskStore()
 const { stats, upcomingTasks, loading, error, loadDashboard } = useDashboard()
-const { deleteTask, toggleStatus } = useTasks()
+const { deleteTask, toggleStatus } = taskStore
 
 onMounted(() => {
   loadDashboard()

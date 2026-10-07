@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTasks } from '@/composables/useTasks'
-import { useTask } from '@/composables/useTasks'
-import { useSubjects } from '@/composables/useTasks'
+import { useTaskStore, useTask, useSubjects } from '@/stores/tasks'
 import { useToast } from '@/composables/useToast'
 import TaskForm from '@/components/TaskForm.vue'
 import Toast from '@/components/Toast.vue'
@@ -12,13 +10,15 @@ import type { TaskFormData } from '@/types/task'
 
 const route = useRoute()
 const router = useRouter()
+const taskStore = useTaskStore()
+const { success: showSuccess, error: showError } = useToast()
+
 const taskId = () => (route.params.id as string) || null
 const isEditing = computed(() => route.name === 'TaskEdit')
 
-const { createTask, updateTask } = useTasks()
+const { createTask, updateTask } = taskStore
 const { task: existingTask, loadTask: loadExistingTaskData } = useTask(taskId)
 const { loadSubjects } = useSubjects()
-const { success: showSuccess, error: showError } = useToast()
 
 const formData = ref<TaskFormData>({
   title: '',

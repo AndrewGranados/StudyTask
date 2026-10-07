@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTask } from '@/composables/useTasks'
-import { useTasks } from '@/composables/useTasks'
+import { useTaskStore, useTask } from '@/stores/tasks'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TaskStatusBadge from '@/components/TaskStatusBadge.vue'
@@ -15,11 +14,13 @@ import { Calendar, BookOpen, Flag, Circle, Clock, CheckCircle2, Edit2, Trash2, A
 
 const route = useRoute()
 const router = useRouter()
+const taskStore = useTaskStore()
+const { success: showSuccess, error: showError } = useToast()
+
 const taskId = () => route.params.id as string
 
 const { task, loading, error, loadTask } = useTask(taskId)
-const { updateTask, deleteTask } = useTasks()
-const { success: showSuccess, error: showError } = useToast()
+const { updateTask, deleteTask } = taskStore
 
 const showDeleteDialog = ref(false)
 
@@ -281,12 +282,12 @@ onMounted(() => {
 
 .detail-section {
   padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--color-border).
+  border-bottom: 1px solid var(--color-border);
 }
 
 .detail-section:last-child {
   padding-bottom: 0;
-  border-bottom: none.
+  border-bottom: none;
 }
 
 .detail-section-title {
@@ -296,7 +297,7 @@ onMounted(() => {
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: var(--space-4).
+  margin-bottom: var(--space-4);
 }
 
 .detail-description {

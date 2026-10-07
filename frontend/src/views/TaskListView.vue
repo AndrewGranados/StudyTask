@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
-import { useTasks } from '@/composables/useTasks'
-import { useSubjects } from '@/composables/useTasks'
+import { useTaskStore, useSubjects } from '@/stores/tasks'
 import { useToast } from '@/composables/useToast'
 import TaskCard from '@/components/TaskCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -11,8 +11,10 @@ import { Search, Filter, X, ChevronDown } from 'lucide-vue-next'
 import type { TaskFilters } from '@/types/task'
 
 const route = useRoute()
-const { tasks, loading, error, loadTasks, deleteTask, toggleStatus, setFilters, clearFilters, filters } = useTasks()
-const { subjects, loadSubjects } = useSubjects()
+const taskStore = useTaskStore()
+const subjectStore = useSubjects()
+const subjects = computed(() => subjectStore.subjects.value)
+const { tasks, loading, error, filters } = storeToRefs(taskStore)
 const { success: showSuccess, error: showError } = useToast()
 
 const searchQuery = ref('')
@@ -20,33 +22,33 @@ const showFilters = ref(false)
 
 onMounted(() => {
   if (route.name === 'CompletedTasks') {
-    setFilters({ status: 'completed' })
+    taskStore.setFilters({ status: 'completed' })
   } else if (route.name === 'PendingTasks') {
-    setFilters({ status: 'pending' })
+    taskStore.setFilters({ status: 'pending' })
   }
-  loadTasks()
-  loadSubjects()
+  taskStore.loadTasks()
+  subjectStore.loadSubjects()
 })
 
 watch(
   () => filters.value,
   () => {
-    loadTasks()
+    taskStore.loadTasks()
   },
   { deep: true }
 )
 
 const handleSearch = () => {
-  setFilters({ search: searchQuery.value })
+  taskStore.setFilters({ search: searchQuery.value })
 }
 
 const handleFilterChange = (key: keyof TaskFilters, value: string) => {
   if (value) {
-    setFilters({ [key]: value })
+    taskStore.setFilters({ [key]: value })
   } else {
     const newFilters = { ...filters.value }
     delete newFilters[key]
-    setFilters(newFilters)
+    taskStore.setFilters(newFilters)
   }
 }
 
@@ -54,10 +56,7 @@ const hasActiveFilters = computed(() => {
   return Object.keys(filters.value).length > 0
 })
 
-const clearAllFilters = () => {
-  clearFilters()
-  searchQuery.value = ''
-}
+
 
 const pageTitle = computed(() => {
   if (route.name === 'CompletedTasks') return 'Tareas completadas'
@@ -86,7 +85,7 @@ const emptyDescription = computed(() =>
 
 const handleDelete = async (id: string) => {
   try {
-    await deleteTask(id)
+    await taskStore.deleteTask(id)
     showSuccess('Tarea eliminada correctamente')
   } catch (e) {
     showError('Error al eliminar la tarea')
@@ -96,7 +95,7 @@ const handleDelete = async (id: string) => {
 
 const handleToggle = async (id: string) => {
   try {
-    await toggleStatus(id)
+    await taskStore.toggleStatus(id)
     const task = tasks.value.find(t => t.id === id)
     const newStatus = task?.status === 'pending' ? 'completada' : 'pendiente'
     showSuccess(`Tarea marcada como ${newStatus}`)
@@ -144,7 +143,7 @@ const handleToggle = async (id: string) => {
         <button
           v-if="hasActiveFilters"
           class="btn btn-ghost btn-sm"
-          @click="clearAllFilters"
+          @click="taskStore.clearFilters()"
           aria-label="Limpiar filtros"
         >
           <X class="icon" :size="18" aria-hidden="true" />
@@ -206,7 +205,7 @@ const handleToggle = async (id: string) => {
 
     <div v-else-if="error" class="error-state" role="alert">
       <p>{{ error }}</p>
-      <button class="btn btn-secondary" @click="loadTasks">Reintentar</button>
+      <button class="btn btn-secondary" @click="taskStore.loadTasks()">Reintentar</button>
     </div>
 
     <div v-else-if="tasks.length === 0" class="empty-state-container">
