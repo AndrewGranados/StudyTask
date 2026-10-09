@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { RouterLink } from 'vue-router'
 import { Calendar, Flag, Circle, Square, CheckCircle2, Trash2, Edit2 } from 'lucide-vue-next'
@@ -19,7 +19,9 @@ const emit = defineEmits<{
 }>()
 
 const formatDate = (dateString: string) => {
-  return format(new Date(dateString), 'dd MMM yyyy', { locale: es })
+  // Parse date string as YYYY-MM-DD without timezone conversion
+  const parsed = parse(dateString, 'yyyy-MM-dd', new Date())
+  return format(parsed, 'dd MMM yyyy', { locale: es })
 }
 
 const getPriorityIcon = (priority: Task['priority']) => {

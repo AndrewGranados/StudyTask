@@ -43,15 +43,32 @@ function validateTaskInput(data, isUpdate = false) {
   return errors;
 }
 
-function sanitizeInput(data) {
-  return {
+function sanitizeInput(data, isUpdate = false) {
+  const result = {
     title: data.title?.trim(),
-    description: data.description?.trim() || '',
     subject: data.subject?.trim(),
     dueDate: data.dueDate,
     priority: data.priority,
     status: data.status,
   };
+
+  // Only include description if explicitly provided (not undefined)
+  if (data.description !== undefined) {
+    result.description = data.description?.trim() || '';
+  }
+
+  // For updates, only include fields that are explicitly provided
+  if (isUpdate) {
+    const resultFiltered = {};
+    for (const [key, value] of Object.entries(result)) {
+      if (value !== undefined) {
+        resultFiltered[key] = value;
+      }
+    }
+    return resultFiltered;
+  }
+
+  return result;
 }
 
 export const tasksController = {
@@ -96,7 +113,7 @@ export const tasksController = {
         return sendJSON(res, 400, { success: false, error: { message: 'Validation failed', details: errors } });
       }
 
-      const data = sanitizeInput(body);
+      const data = sanitizeInput(body, false);
       const task = await taskRepository.create(data);
       sendJSON(res, 201, { success: true, data: task });
     } catch (error) {
@@ -122,7 +139,7 @@ export const tasksController = {
         return sendJSON(res, 404, { success: false, error: { message: 'Task not found' } });
       }
 
-      const data = sanitizeInput(body);
+      const data = sanitizeInput(body, true);
       const task = await taskRepository.update(taskId, data);
       sendJSON(res, 200, { success: true, data: task });
     } catch (error) {

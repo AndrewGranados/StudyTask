@@ -8,7 +8,7 @@ import TaskStatusBadge from '@/components/TaskStatusBadge.vue'
 import TaskPriorityBadge from '@/components/TaskPriorityBadge.vue'
 import Toast from '@/components/Toast.vue'
 import { RouterLink } from 'vue-router'
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Calendar, BookOpen, Flag, Circle, Clock, CheckCircle2, Edit2, Trash2, ArrowLeft } from 'lucide-vue-next'
 
@@ -25,11 +25,15 @@ const { updateTask, deleteTask } = taskStore
 const showDeleteDialog = ref(false)
 
 const formatDate = (dateString: string) => {
-  return format(new Date(dateString), 'dd \'de\' MMMM \'de\' yyyy', { locale: es })
+  // Parse date string as YYYY-MM-DD without timezone conversion
+  const parsed = parse(dateString, 'yyyy-MM-dd', new Date())
+  return format(parsed, 'dd \'de\' MMMM \'de\' yyyy', { locale: es })
 }
 
 const formatDateTime = (dateString: string) => {
-  return format(new Date(dateString), 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es })
+  // Parse date string as YYYY-MM-DD without timezone conversion
+  const parsed = parse(dateString, 'yyyy-MM-dd', new Date())
+  return format(parsed, 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es })
 }
 
 const getPriorityIcon = (priority: string) => {
