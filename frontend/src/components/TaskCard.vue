@@ -2,7 +2,7 @@
 import { format, parse } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { RouterLink } from 'vue-router'
-import { Calendar, Flag, Circle, Square, CheckCircle2, Trash2, Edit2 } from 'lucide-vue-next'
+import { Calendar, Flag, Circle, Eye, Trash2, Edit2 } from 'lucide-vue-next'
 import TaskPriorityBadge from '@/components/TaskPriorityBadge.vue'
 import TaskStatusBadge from '@/components/TaskStatusBadge.vue'
 import type { Task } from '@/types/task'
@@ -53,36 +53,26 @@ const getPriorityIcon = (priority: Task['priority']) => {
         <TaskPriorityBadge :priority="task.priority" />
       </div>
       <div class="task-card-meta-item">
-        <TaskStatusBadge :status="task.status" />
+        <TaskStatusBadge :status="task.status" size="md" :interactive="true" @onToggle="() => emit('toggle', task.id)" />
       </div>
     </div>
 
     <div class="task-card-actions">
       <RouterLink
         :to="`/tasks/${task.id}`"
-        class="btn btn-ghost btn-sm btn-icon"
-        aria-label="Ver detalle"
+        class="btn btn-secondary btn-sm"
+        aria-label="Ver detalles"
       >
-        <Circle class="icon" :size="18" aria-hidden="true" />
+        <Eye class="icon" :size="16" aria-hidden="true" />
+        <span class="hidden sm:inline">Ver detalles</span>
       </RouterLink>
 
-      <button
-        v-if="task.status === 'pending'"
-        class="btn btn-ghost btn-sm btn-icon"
-        @click="emit('toggle', task.id)"
-        aria-label="Marcar como completada"
-      >
-        <Square class="icon" :size="18" aria-hidden="true" />
-      </button>
-
-      <button
-        v-else
-        class="btn btn-ghost btn-sm btn-icon text-success"
-        @click="emit('toggle', task.id)"
-        aria-label="Marcar como pendiente"
-      >
-        <CheckCircle2 class="icon" :size="18" aria-hidden="true" />
-      </button>
+      <TaskStatusBadge
+        :status="task.status"
+        size="md"
+        :interactive="true"
+        @onToggle="() => emit('toggle', task.id)"
+      />
 
       <RouterLink
         :to="`/tasks/${task.id}/edit`"

@@ -294,6 +294,11 @@ C:\Pwa\AplicativoNotas\
 8. ✅ **Bug CREATE loading state** — Estado "Guardando..." bloqueado, corregido moviendo estado al padre
 8. ✅ **Feedback UX** — Sistema de toasts para éxito/error en todas las operaciones CRUD
 9. ✅ **Datos seed** — Eliminados, auto-seed desactivado, BD limpia
+9. ✅ **Sincronización vistas** — Navegación entre `/pending`, `/completed`, `/tasks`, `/` actualiza listas SIN Ctrl+R
+10. ✅ **UI estado unificada** — Checkbox cuadrado vacío (pendiente) / verde con check (completada) en TODAS las vistas
+11. ✅ **Botón "Ver detalles"** — Reemplazado control circular por botón con texto + icono Eye
+12. ✅ **Bug Description al cambiar estado** — PATCH `/api/tasks/:id/status` solo actualiza status + updated_at
+13. ✅ **Bug fecha off-by-one** — Parseo con `parse()` de date-fns evita zona horaria
 
 ## Próximos pasos (Fase 4+)
 
@@ -311,4 +316,5 @@ C:\Pwa\AplicativoNotas\
 - `fix(integration): stabilize CRUD flow, add toast feedback, clean seed data`
 - `fix(integration): fix create bug, sync state, restore subjects`
 - `fix(integration): fix status sync, status button UI, description bug`
+- `fix(integration): fix status UI, sync, description bug, date off-by-one`
 **Builds:** ✅ Frontend + Backend funcionando

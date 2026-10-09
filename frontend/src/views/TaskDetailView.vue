@@ -10,7 +10,7 @@ import Toast from '@/components/Toast.vue'
 import { RouterLink } from 'vue-router'
 import { format, parse } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Calendar, BookOpen, Flag, Circle, Clock, CheckCircle2, Edit2, Trash2, ArrowLeft } from 'lucide-vue-next'
+import { Calendar, BookOpen, Flag, Circle, Clock, Edit2, Trash2, ArrowLeft } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -104,19 +104,17 @@ onMounted(() => {
             <TaskPriorityBadge :priority="task.priority" />
           </div>
         </div>
-        <div class="detail-actions">
+<div class="detail-actions">
           <RouterLink :to="`/tasks/${task.id}/edit`" class="btn btn-secondary">
             <Edit2 class="icon" :size="18" aria-hidden="true" />
             <span>Editar</span>
           </RouterLink>
-          <button
-            class="btn"
-            :class="task.status === 'pending' ? 'btn-success' : 'btn-secondary'"
-            @click="handleToggleStatus"
-          >
-            <CheckCircle2 class="icon" :size="18" aria-hidden="true" />
-            <span>{{ task.status === 'pending' ? 'Completar' : 'Reabrir' }}</span>
-          </button>
+          <TaskStatusBadge
+            :status="task.status"
+            size="lg"
+            :interactive="true"
+            @onToggle="handleToggleStatus"
+          />
           <button
             class="btn btn-danger"
             @click="showDeleteDialog = true"

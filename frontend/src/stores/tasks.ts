@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watchEffect, toValue } from 'vue'
+import { ref, computed, watch, toValue } from 'vue'
 import type { Task, TaskFormData, TaskFilters, DashboardStats } from '@/types/task'
 import { taskService } from '@/services/taskService'
 
@@ -130,9 +130,10 @@ export function useTask(id: string | null | (() => string | null)) {
     }
   }
 
-  watchEffect(() => {
+  // Use watch instead of watchEffect to properly track route parameter changes
+  watch(() => toValue(id), () => {
     loadTask()
-  })
+  }, { immediate: true })
 
   return {
     task,
