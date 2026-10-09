@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check, Square } from 'lucide-vue-next'
+import { CheckCircle2, Circle } from 'lucide-vue-next'
 import type { TaskStatus } from '@/types/task'
 
 interface Props {
@@ -21,7 +21,7 @@ const statusConfig = computed(() => {
     return {
       label: 'Completada',
       class: 'status-completed',
-      icon: Check,
+      icon: CheckCircle2,
       bgClass: 'bg-success',
       borderClass: 'border-success',
     }
@@ -29,7 +29,7 @@ const statusConfig = computed(() => {
   return {
     label: 'Pendiente',
     class: 'status-pending',
-    icon: Square,
+    icon: Circle,
     bgClass: 'bg-transparent',
     borderClass: 'border-secondary',
   }
@@ -67,7 +67,7 @@ const iconSize = computed(() => {
       'inline-flex',
       'items-center',
       'justify-center',
-      'rounded',
+      'rounded-full',
       'transition-colors',
       'focus:outline-none',
       'focus:ring-2',

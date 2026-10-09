@@ -195,11 +195,11 @@
 
 - **Sincronización entre vistas corregida**: Al navegar entre `/pending`, `/completed`, `/tasks`, `/` las vistas ahora reflejan el estado real del backend SIN Ctrl+R. Causa: `TaskListView.vue` no recargaba tareas al cambiar de ruta. Solución: Añadido watcher en `route.name` que actualiza filtros y recarga tareas (`TaskListView.vue` líneas 33-47).
 
-- **Control visual de estado rediseñado**: Botón de cambio de estado en `TaskCard.vue` rediseñado visualmente.
-  - **Pendiente**: Cuadrado con borde (checkbox vacío) → representa "marcar como completada"
-  - **Completada**: Cuadrado verde con check (✓) en color verde principal de StudyTask → representa "completada"
-  - Usa iconos `Square` (pendiente) y `Check` (completada) de lucide-vue-next
-  - Color verde principal (`text-success`) para estado completado
+- **Control visual de estado unificado (restaurado a diseño circular original)**: Checkbox circular unificado en TODAS las vistas.
+  - **Pendiente**: Círculo vacío (checkbox vacío) → representa "marcar como completada"
+  - **Completada**: Círculo verde con check (✓) en color verde principal de StudyTask → representa "completada"
+  - Usa iconos `CheckCircle2` (pendiente→completada) y `Circle` (completada→pendiente) de lucide-vue-next
+  - Color verde principal (`text-success`) para estado completado, con `rounded-full` para forma circular
   - Mantiene accesibilidad (aria-label), tooltip, interacción teclado, hover/focus, responsive
 
 - **Bug Description al cambiar estado CORREGIDO**: La descripción se borraba al cambiar estado (pending ↔ completed). Causa: `toggleStatus` en store llamaba a `updateTask` (PUT `/api/tasks/:id`) enviando solo `status`, pero backend `sanitizeInput` rellenaba campos faltantes con strings vacíos, borrando `description`. Solución:

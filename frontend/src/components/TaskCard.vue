@@ -53,7 +53,7 @@ const getPriorityIcon = (priority: Task['priority']) => {
         <TaskPriorityBadge :priority="task.priority" />
       </div>
       <div class="task-card-meta-item">
-        <TaskStatusBadge :status="task.status" size="md" :interactive="true" @onToggle="() => emit('toggle', task.id)" />
+        <TaskStatusBadge :status="task.status" size="md" :interactive="true" :onToggle="() => emit('toggle', task.id)" />
       </div>
     </div>
 
@@ -71,7 +71,7 @@ const getPriorityIcon = (priority: Task['priority']) => {
         :status="task.status"
         size="md"
         :interactive="true"
-        @onToggle="() => emit('toggle', task.id)"
+        :onToggle="() => emit('toggle', task.id)"
       />
 
       <RouterLink

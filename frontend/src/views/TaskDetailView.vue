@@ -119,7 +119,7 @@ onMounted(() => {
             :status="task.status"
             size="lg"
             :interactive="true"
-            @onToggle="handleToggleStatus"
+            :onToggle="handleToggleStatus"
           />
           <button
             class="btn btn-danger"
