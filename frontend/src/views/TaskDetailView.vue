@@ -31,9 +31,15 @@ const formatDate = (dateString: string) => {
 }
 
 const formatDateTime = (dateString: string) => {
-  // Parse date string as YYYY-MM-DD without timezone conversion
-  const parsed = parse(dateString, 'yyyy-MM-dd', new Date())
-  return format(parsed, 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es })
+  // Handle ISO datetime strings (e.g., "2026-10-09T05:49:56.760Z")
+  if (!dateString) return 'No disponible'
+  try {
+    const parsed = new Date(dateString)
+    if (isNaN(parsed.getTime())) return 'No disponible'
+    return format(parsed, 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es })
+  } catch {
+    return 'No disponible'
+  }
 }
 
 const getPriorityIcon = (priority: string) => {

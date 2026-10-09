@@ -187,6 +187,54 @@
 - ✅ TYPECHECK: `npm run typecheck` → 0 errores
 - ✅ BUILD: `npm run build` → éxito en 3.5s
 - ✅ DESCRIPTION PERSISTE: Cambio pending→completed→pending → descripción se mantiene exactamente igual en SQLite
+- ✅ FECHAS SIN DESFASE: 2026-11-09, 2026-11-10, 2026-11-11 correctas
+- ✅ TYPECHECK: `npm run typecheck` → 0 errores
+- ✅ BUILD: `npm run build` → éxito en 3.5s
+
+**Corrección Final Fase 3 (UI/UX + Bugs Description + Date Fix) - COMPLETADA ✅:**
+
+- **Sincronización entre vistas corregida**: Al navegar entre `/pending`, `/completed`, `/tasks`, `/` las vistas ahora reflejan el estado real del backend SIN Ctrl+R. Causa: `TaskListView.vue` no recargaba tareas al cambiar de ruta. Solución: Añadido watcher en `route.name` que actualiza filtros y recarga tareas (`TaskListView.vue` líneas 33-47).
+
+- **Control visual de estado rediseñado**: Botón de cambio de estado en `TaskCard.vue` rediseñado visualmente.
+  - **Pendiente**: Cuadrado con borde (checkbox vacío) → representa "marcar como completada"
+  - **Completada**: Cuadrado verde con check (✓) en color verde principal de StudyTask → representa "completada"
+  - Usa iconos `Square` (pendiente) y `Check` (completada) de lucide-vue-next
+  - Color verde principal (`text-success`) para estado completado
+  - Mantiene accesibilidad (aria-label), tooltip, interacción teclado, hover/focus, responsive
+
+- **Bug Description al cambiar estado CORREGIDO**: La descripción se borraba al cambiar estado (pending ↔ completed). Causa: `toggleStatus` en store llamaba a `updateTask` (PUT `/api/tasks/:id`) enviando solo `status`, pero backend `sanitizeInput` rellenaba campos faltantes con strings vacíos, borrando `description`. Solución:
+  1. Añadido `toggleTaskStatus` en `taskService.ts` usando PATCH `/api/tasks/:id/status`
+  2. `toggleStatus` en store ahora usa `taskService.toggleTaskStatus` (PATCH) en vez de `updateTask` (PUT)
+  3. Backend PATCH `/api/tasks/:id/status` solo actualiza `status` y `updated_at`
+
+- **Bug fecha off-by-one CORREGIDO**: Parseo de fechas con `parse()` de date-fns en lugar de `new Date()` para evitar zona horaria
+
+**Archivos creados/modificados en corrección final:**
+- `frontend/src/services/taskService.ts` — Añadido `toggleTaskStatus` usando PATCH `/api/tasks/:id/status`
+- `frontend/src/stores/tasks.ts` — `toggleStatus` usa `taskService.toggleTaskStatus` (PATCH) en vez de `updateTask` (PUT)
+- `frontend/src/components/TaskCard.vue` — Botón "Ver detalles" con icono Eye; status usa TaskStatusBadge
+- `frontend/src/components/TaskStatusBadge.vue` — Control unificado: Square (pendiente) / Check verde (completada)
+- `frontend/src/views/TaskDetailView.vue` — `formatDate`/`formatDateTime` usan `parse()` sin zona horaria; usa TaskStatusBadge interactivo
+- `frontend/src/views/TaskListView.vue` — Watcher en `route.name` para recargar tareas al navegar
+- `backend/src/database.js` — Auto-seed desactivado (solo crea tabla, loggea si vacía)
+
+**Pruebas realizadas en corrección final:**
+- ✅ CREATE: POST /api/tasks → 201, toast "Tarea creada correctamente", navegación a lista
+- ✅ READ: GET /api/tasks → 200, lista completa desde SQLite
+- ✅ READ ONE: GET /api/tasks/:id → 200, tarea individual
+- ✅ UPDATE: PUT /api/tasks/:id → 200, toast "Tarea actualizada correctamente", navegación a lista
+- ✅ STATUS TOGGLE: PATCH /api/tasks/:id/status → 200, toast "Tarea marcada como completada/pendiente"
+- ✅ DELETE: DELETE /api/tasks/:id → 204, toast "Tarea eliminada correctamente"
+- ✅ FILTROS: `?status=`, `?priority=`, `?subject=` funcionando
+- ✅ VALIDACIÓN: 400 para datos inválidos (title corto, priority inválido, campos faltantes) con toast de error
+- ✅ 404: ID inexistente, rutas no encontradas
+- ✅ CORS: Headers correctos para `Origin: http://localhost:3000`
+- ✅ PERSISTENCIA: Tarea creada → reinicio Node.js → tarea presente en GET /api/tasks
+- ✅ SYNC PENDING/COMPLETED: Cambio pending→completed → desaparece de /pending, aparece en /completed SIN Ctrl+R
+- ✅ SYNC INVERSO: Cambio completed→pending → desaparece de /completed, aparece en /pending SIN Ctrl+R
+- ✅ MATERIAS: Selector muestra 10 materias académicas, NO "Test"
+- ✅ TYPECHECK: `npm run typecheck` → 0 errores
+- ✅ BUILD: `npm run build` → éxito en 3.5s
 
 ### Fase 4 — PWA
 **Estado:** Pendiente
@@ -308,7 +356,7 @@ C:\Pwa\AplicativoNotas\
 
 ---
 
-**Última actualización:** 2026-10-07
+**Última actualización:** 2026-10-09
 **Commits:**
 - `4297beb` — feat(frontend): implement complete StudyTask frontend
 - `7c35162` — feat(backend): implement REST API with SQLite
@@ -317,4 +365,5 @@ C:\Pwa\AplicativoNotas\
 - `fix(integration): fix create bug, sync state, restore subjects`
 - `fix(integration): fix status sync, status button UI, description bug`
 - `fix(integration): fix status UI, sync, description bug, date off-by-one`
+- `fix(integration): fix status UI, sync, description bug, date off-by-one, unify status UI`
 **Builds:** ✅ Frontend + Backend funcionando
