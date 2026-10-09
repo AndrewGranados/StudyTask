@@ -82,7 +82,14 @@ export const useTaskStore = defineStore('tasks', () => {
   async function toggleStatus(id: string) {
     const task = tasks.value.find(t => t.id === id)
     if (task) {
-      return taskService.toggleTaskStatus(id)
+      const updated = await taskService.toggleTaskStatus(id)
+      if (updated) {
+        const index = tasks.value.findIndex(t => t.id === id)
+        if (index !== -1) {
+          tasks.value = tasks.value.map((t, i) => i === index ? updated : t)
+        }
+      }
+      return updated
     }
     return null
   }
